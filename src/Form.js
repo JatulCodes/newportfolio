@@ -1,87 +1,104 @@
-import React, { Component } from 'react';
+import React, { useState  } from 'react';
 import './Portfolio.css';
 import './utilities.css';
 
-class Form extends Component {
 
-    constructor(props){
-        super(props);
 
-        this.state={
-            
-            Yourname:"",
-            email:"",
-            YourSubject:"",
-            YourMessage:""
+
+const ProxyUrl = "http://localhost:8000/clients";
+
+const Form = ()=> {
+
     
+        const[user,setUser]=useState({
+            Name:"", email:"", Subject:"", Message:""
+        });
+        let name ,value;
+
+    const  handleInputs=(event)=>{
+        console.log(event);
+        name =event.target.name;
+        value=event.target.value;
+        
+        
+
+        setUser({...user,[name]:value});
     }
-    }
 
-    // handlename = (event)=>{
-
-    //     this.setState({Yourname:event.target.value})
-    // // console.log(event.target.value);      
-
-    // }
-    
-
-    handlechangeall=(event)=>{
-        this.setState({[event.target.name]:event.target.value})
-    }
-
-    handlesubmit=(event)=>{
-        // alert(`My Name is ${this.state.Yourname}`)
-        alert (JSON.stringify(this.state))
+    //Store data in database
+    const PostData = async(event)=>{
         event.preventDefault();
+        const { Name , email , Subject , Message } = user;
+
+        const res = await fetch(ProxyUrl,{
+            method:"POST",
+            headers:{
+                "Accept":"application/json",
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                Name,email,Subject,Message
+            })
+        });
+        const data = await res.json();
+        if(data.status === 422 || !data){
+            window.alert("Email already exist please try again");
+            console.log("invalid registration");
+        }
+        else{
+            window.alert(" Registration succussfull");
+            console.log(" Registration succussfull");
+            
+        }
     }
-    render() {
+
+     
         return (
             <>
-                <form onSubmit ={this.handlesubmit}>
+                <form  method ="POST">
                     <div className="input_wrap">
                         <input 
                         type="text"
-                        name="Yourname"
-                        value={this.state.Yourname}
-                        onChange={this.handlechangeall}
+                        name="Name"
+                        value={user.Name}
+                        onChange={handleInputs}
                         placeholder="Your Name" />
 
                         <input 
                         type="email" 
                         name="email"
-                        value={this.state.email} 
-                        onChange={this.handlechangeall}
+                        value={user.email} 
+                        onChange={handleInputs}
                         placeholder="Your Email" />
                     </div>
                     <div className=" input_wrap_2">
                         <input 
                         type="text" 
-                        name="YourSubject"
-                        value={this.state.YourSubject}
-                        onChange={this.handlechangeall}
+                        name="Subject"
+                        value={user.Subject}
+                        onChange={handleInputs}
                         placeholder="Your Subject..." />
 
                         <textarea 
                         type="text"
-                        name="YourMessage" 
-                        value={this.state.YourMessage} 
-                        onChange={this.handlechangeall}
+                        name="Message" 
+                        value={user.Message} 
+                        onChange={handleInputs}
                         id="" 
                         cols="30" 
                         rows="10" 
                         placeholder="Your Message"></textarea>
                     </div>
-                    <div className="btn_wrapper">
+                    <div className="btn_wrapper" >
                         <button 
                         type="submit" 
-                        value="" 
+                        value="" onClick={PostData}
                         
-                        class="btn btn-primary">Send Message</button>
+                        className="btn btn-primary">Send Message</button>
                     </div>
                 </form>
 
             </>
         )
     }
-}
 export default Form;
